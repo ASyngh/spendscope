@@ -1,6 +1,6 @@
 export interface AuditTool {
     id: string;
-    toolName: string;
+    name: string;
     plan: string;
     monthlyCost: number;
     seats: number;

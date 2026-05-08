@@ -13,7 +13,7 @@ export function runAudit(
     let totalMonthlySpend = 0;
     let potentialMonthlySavings = 0;
 
-    const toolNames = tools.map((tool) => tool.toolName);
+    const toolNames = tools.map((tool) => tool.name);
 
     for (const tool of tools) {
         totalMonthlySpend += tool.monthlyCost;
@@ -35,7 +35,7 @@ export function runAudit(
 
         if (tool.seats > 10) {
             recommendations.push({
-                tool: tool.toolName,
+                tool: tool.name,
                 issue: "High seat allocation",
                 suggestion: "Review inactive seats",
                 estimatedSavings: 50,
@@ -46,12 +46,12 @@ export function runAudit(
         }
 
         if (
-            tool.toolName === "ChatGPT" &&
+            tool.name === "ChatGPT" &&
             tool.plan === "Team" &&
             tool.seats < 5
         ) {
             recommendations.push({
-                tool: tool.toolName,
+                tool: tool.name,
                 issue: "Expensive plan for small team",
                 suggestion: "Consider downgrading to ChatGPT Plus",
                 estimatedSavings: 40,
