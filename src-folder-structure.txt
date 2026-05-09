@@ -1,0 +1,32 @@
+src/
+├── app/
+│   ├── audit/
+│   │   └── page.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── audit/
+│   │   ├── audit-form.tsx
+│   │   └── audit-results.tsx
+│   ├── layout/
+│   │   └── navbar.tsx
+│   └── ui/
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── form.tsx
+│       ├── input.tsx
+│       ├── select.tsx
+│       └── table.tsx
+├── constants/
+│   ├── plans.ts
+│   └── tools.ts
+├── hooks/
+├── lib/
+│   ├── audit-engine.ts
+│   └── utils.ts
+├── styles/
+└── types/
+    └── audit.ts

@@ -24,7 +24,6 @@ const TOOL_CATEGORIES: Record<string, string> = {
     ChatGPT: "general-ai",
     Claude: "general-ai",
     Gemini: "general-ai",
-    Perplexity: "general-ai",
     Copilot: "general-ai",  // Microsoft Copilot (not GitHub)
 
     // Dedicated Coding Assistants
@@ -54,6 +53,7 @@ const TOOL_CATEGORIES: Record<string, string> = {
 
     // Search / Research
     "You.com": "ai-search",
+    Perplexity: "ai-search",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -346,7 +346,7 @@ function deriveSeverity(
  * Checks whether a tool's use case description contains coding-related keywords.
  * Used to validate whether "coding" capability is actually being used.
  */
-function indicatesCodingUseCase(useCase: string): boolean {
+function indicatesUseCaseCoding(useCase: string): boolean {
     const CODING_KEYWORDS = [
         "coding", "code", "dev", "engineer", "programming", "development",
         "software", "api", "terminal", "cli", "repository", "repo",
@@ -789,13 +789,32 @@ function ruleExcessSeats(ctx: RuleContext): RuleResult {
 }
 
 /**
+ * Minimum seat count required before a volume/enterprise discount negotiation
+ * is realistically available from each vendor.
+ * Tools not listed (Midjourney, Notion AI, Jasper) have no volume discount
+ * programme and should never trigger this rule.
+ */
+const NEGOTIATE_MIN_SEATS: Record<string, number> = {
+    Claude:             50,  // Anthropic Enterprise minimum
+    ChatGPT:           150,  // OpenAI Enterprise minimum
+    "GitHub Copilot":   50,  // GitHub Enterprise contact-sales threshold
+    Cursor:             30,  // No published minimum; ~25-35 seat market norm
+};
+
+/**
  * RULE 12 — High spend concentration in a single tool
- * One tool consuming >50% of total AI budget is both a concentration risk
- * and the single best negotiation or cancellation lever.
+ * Only fires when the team is above the vendor's realistic enterprise/volume
+ * discount threshold — below that, no custom deal exists to negotiate.
  */
 function ruleSpendConcentration(ctx: RuleContext): RuleResult {
-    const { tool, totalSpend } = ctx;
+    const { tool, totalSpend, allTools } = ctx;
     if (totalSpend === 0) return null;
+    if (allTools.length < 2) return null; // solo tool — intentional, not a risk
+
+    // Only fire for tools where vendor volume discounts actually exist
+    const minSeats = NEGOTIATE_MIN_SEATS[tool.name];
+    if (minSeats === undefined) return null; // tool has no volume discount programme
+    if (tool.seats < minSeats) return null;  // below threshold — vendor won't negotiate
 
     const pct = (tool.monthlyCost / totalSpend) * 100;
     if (pct < 50) return null;
@@ -807,8 +826,8 @@ function ruleSpendConcentration(ctx: RuleContext): RuleResult {
         rec: {
             tool: tool.name,
             type: "negotiate",
-            issue: `${Math.round(pct)}% of total AI spend concentrated in a single tool`,
-            suggestion: `${tool.name} is your biggest AI cost lever. High spend = strong negotiating position — push for a 15–20% annual-contract discount, especially at renewal. If utilisation is unclear, pull admin usage reports first; low utilisation makes it your top cancellation candidate instead.`,
+            issue: `${Math.round(pct)}% of total AI spend concentrated in ${tool.name} across ${tool.seats} seats`,
+            suggestion: `At ${tool.seats} seats you're above ${tool.name}'s enterprise threshold — request a 15-20% annual-contract discount at renewal. Pull admin usage reports first so you can show seat utilisation; high utilisation strengthens the ask considerably.`,
             estimatedSavings: savings,
             severity: deriveSeverity(savings, totalSpend),
             confidence: 0.70,
@@ -876,7 +895,7 @@ function rulePlanIncludesUnusedCodingCapability(ctx: RuleContext): RuleResult {
     const config = HIGH_COST_CODING_PLANS[tool.name];
     if (!config || tool.plan !== config.codingPlan) return null;
 
-    if (indicatesCodingUseCase(tool.useCase)) return null; // Using it correctly
+    if (indicatesUseCaseCoding(tool.useCase)) return null; // Using it correctly
 
     const agentName = getCodingAgentName(tool.name);
     const totalSavings = Math.round(config.savingsPerSeat * Math.max(tool.seats, 1));

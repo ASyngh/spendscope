@@ -130,13 +130,14 @@ interface AuditFormProps {
     onAddTool: (tool: AuditTool) => void;
     onRemoveTool: (id: string) => void;
     onRunAudit: () => void;
+    loading?:boolean;
 }
 
 // ─────────────────────────────────────────────
 // COMPONENT
 // ─────────────────────────────────────────────
 
-export function AuditForm({ tools, onAddTool, onRemoveTool, onRunAudit }: AuditFormProps) {
+export function AuditForm({ tools, onAddTool, onRemoveTool, onRunAudit, loading }: AuditFormProps) {
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {

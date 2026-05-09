@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { Navbar } from "@/components/layout/navbar";
-import { AuditTool, AuditResult } from "@/types/audit";
-import { runAudit } from "@/lib/audit-engine";
+import { AuditTool } from "@/types/audit";
+import { runFullAudit } from "@/lib/run-audit";
+import { FullAuditResult } from "@/lib/run-audit";
 import { AuditForm } from "@/components/audit/audit-form";
 import { AuditResults } from "@/components/audit/audit-results";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AuditPage() {
     const [tools, setTools] = useState<AuditTool[]>([]);
-    const [result, setResult] = useState<AuditResult | null>(null);
+    const [result, setResult] = useState<FullAuditResult | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const handleAddTool = (tool: AuditTool) => {
         setTools(prev => [...prev, tool]);
@@ -20,10 +22,15 @@ export default function AuditPage() {
         setTools(prev => prev.filter(t => t.id !== id));
     };
 
-    const handleRunAudit = () => {
+    const handleRunAudit = async () => {
         if (tools.length === 0) return;
-        const res = runAudit(tools);
-        setResult(res);
+        setLoading(true);
+        try {
+            const res = await runFullAudit(tools);
+            setResult(res);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleReset = () => {
@@ -53,6 +60,7 @@ export default function AuditPage() {
                                 onAddTool={handleAddTool}
                                 onRemoveTool={handleRemoveTool}
                                 onRunAudit={handleRunAudit}
+                                loading={loading}
                             />
                         </motion.div>
                     ) : (
