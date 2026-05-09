@@ -1,10 +1,11 @@
 export interface AuditTool {
-    id: string;
     name: string;
     plan: string;
     monthlyCost: number;
     seats: number;
     useCase: string;
+    billingCycle?: "monthly" | "annual"; // optional — Rule 15 activates when present
+    id?: string;
 }
 
 export interface AuditResult {
@@ -14,10 +15,20 @@ export interface AuditResult {
     recommendations: Recommendation[];
 }
 
+export type RecommendationType =
+    | "cut"
+    | "downgrade"
+    | "consolidate"
+    | "upgrade"
+    | "negotiate"
+    | "audit";
+
 export interface Recommendation {
     tool: string;
     issue: string;
     suggestion: string;
     estimatedSavings: number;
     severity: "low" | "medium" | "high";
+    type: RecommendationType;
+    confidence: number; // 0.0–1.0
 }
