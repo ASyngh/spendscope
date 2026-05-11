@@ -200,7 +200,7 @@ export async function runFullAudit(tools: AuditTool[]): Promise<FullAuditResult>
     let recommendations = baseResult.recommendations;
     if (stackAnalysis.stackIsWellOptimised) {
         recommendations = recommendations.filter(
-            (r) => r.severity === "high" || (r.confidence ?? 0) >= 0.80
+            (r) => r.severity === "high" || (r.confidence ?? 0) > 0.85
         );
     }
     console.log("[runFullAudit] Step 4 complete. Filtered recommendations:", recommendations.length);

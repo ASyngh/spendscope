@@ -136,7 +136,7 @@ export async function analyzeStack(tools: AuditTool[]): Promise<StackAnalysis> {
     const toolDescriptions = tools
         .map(
             (t) =>
-                `- ${t.name} (${t.plan}, ${t.seats} seat${t.seats !== 1 ? "s" : ""}, $${t.monthlyCost}/mo): "${t.useCase}"`
+                `- Tool: "${t.name}" | Plan: ${t.plan} | Seats: ${t.seats} | Cost: $${t.monthlyCost}/mo | Use case: "${t.useCase}"`
         )
         .join("\n");
 
@@ -152,7 +152,7 @@ Your job:
 Respond with ONLY a JSON object, no markdown, no explanation:
 {
   "toolCapabilities": {
-    "<tool name exactly as given>": {
+    "<Use the exact tool name from the "Tool:" field as the key in toolCapabilities.>": {
       "usesCoding": boolean,
       "usesImageGen": boolean,
       "usesWriting": boolean,

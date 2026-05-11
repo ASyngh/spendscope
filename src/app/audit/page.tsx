@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { AuditTool } from "@/types/audit";
 import { runFullAudit } from "@/lib/run-audit";
@@ -9,17 +9,48 @@ import { AuditForm } from "@/components/audit/audit-form";
 import { AuditResults } from "@/components/audit/audit-results";
 import { motion, AnimatePresence } from "framer-motion";
 
+const STORAGE_KEY = "spendscope_tools";
+
+function loadTools(): AuditTool[] {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        return JSON.parse(raw) as AuditTool[];
+    } catch {
+        return [];
+    }
+}
+
+function saveTools(tools: AuditTool[]) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
+    } catch {
+        // quota exceeded or private browsing — fail silently
+    }
+}
+
 export default function AuditPage() {
     const [tools, setTools] = useState<AuditTool[]>([]);
     const [result, setResult] = useState<FullAuditResult | null>(null);
     const [loading, setLoading] = useState(false);
+    const [auditKey, setAuditKey] = useState(0);
+
+    // Hydrate from localStorage on mount (after hydration to avoid SSR mismatch)
+    useEffect(() => {
+        setTools(loadTools());
+    }, []);
+
+    const updateTools = (next: AuditTool[]) => {
+        setTools(next);
+        saveTools(next);
+    };
 
     const handleAddTool = (tool: AuditTool) => {
-        setTools(prev => [...prev, tool]);
+        updateTools([...tools, tool]);
     };
 
     const handleRemoveTool = (id: string) => {
-        setTools(prev => prev.filter(t => t.id !== id));
+        updateTools(tools.filter(t => t.id !== id));
     };
 
     const handleRunAudit = async () => {
@@ -27,6 +58,7 @@ export default function AuditPage() {
         setLoading(true);
         try {
             const res = await runFullAudit(tools);
+            setAuditKey(k => k + 1);
             setResult(res);
         } finally {
             setLoading(false);
@@ -72,6 +104,7 @@ export default function AuditPage() {
                             transition={{ duration: 0.3 }}
                         >
                             <AuditResults
+                                key={auditKey}
                                 result={result}
                                 tools={tools}
                                 onReset={handleReset}

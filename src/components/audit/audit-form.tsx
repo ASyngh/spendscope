@@ -196,8 +196,15 @@ export function AuditForm({ tools, onAddTool, onRemoveTool, onRunAudit, loading 
             ? data.customName?.trim() || "Unknown Tool"
             : data.name;
 
-        // billingCycle is only included when explicitly set —
-        // omitting it is correct; Rule 15 won't fire on unknown billing cycles
+        const alreadyExists = tools.some(
+            (t) => t.name.toLowerCase() === finalName.toLowerCase()
+        );
+
+        if (alreadyExists) {
+            alert("This tool already exists in your stack.");
+            return;
+        }
+
         const tool: AuditTool = {
             id: crypto.randomUUID(),
             name: finalName,
@@ -211,12 +218,12 @@ export function AuditForm({ tools, onAddTool, onRemoveTool, onRunAudit, loading 
         onAddTool(tool);
 
         form.reset({
-            name:         "",
-            customName:   "",
-            plan:         "",
-            monthlyCost:  0,
-            seats:        1,
-            useCase:      "",
+            name: "",
+            customName: "",
+            plan: "",
+            monthlyCost: 0,
+            seats: 1,
+            useCase: "",
             billingCycle: undefined,
         });
     };

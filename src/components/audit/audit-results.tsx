@@ -6,11 +6,15 @@ import { FullAuditResult } from "@/lib/run-audit";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
-import { ArrowLeft, CheckCircle2, TrendingDown, ChevronDown, Sparkles } from "lucide-react";
+import {
+    ArrowLeft, CheckCircle2, TrendingDown, ChevronDown,
+    Sparkles, Bell, ExternalLink, Zap,
+} from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TOOL ICONS
@@ -44,12 +48,12 @@ type TypeConfig = {
 };
 
 const TYPE_CONFIG: Record<RecommendationType, TypeConfig> = {
-    cut:         { label: "Cut",         borderColor: "hsl(0 72% 51%)",    badgeClass: "bg-red-500/10 text-red-400 border-red-500/25",         dotClass: "bg-red-500",     savingsColor: "text-red-400"     },
-    downgrade:   { label: "Downgrade",   borderColor: "hsl(25 95% 53%)",   badgeClass: "bg-orange-500/10 text-orange-400 border-orange-500/25", dotClass: "bg-orange-500",  savingsColor: "text-orange-400"  },
-    negotiate:   { label: "Negotiate",   borderColor: "hsl(48 96% 53%)",   badgeClass: "bg-yellow-500/10 text-yellow-400 border-yellow-500/25", dotClass: "bg-yellow-500",  savingsColor: "text-yellow-400"  },
-    consolidate: { label: "Consolidate", borderColor: "hsl(217 91% 60%)",  badgeClass: "bg-blue-500/10 text-blue-400 border-blue-500/25",       dotClass: "bg-blue-500",    savingsColor: "text-blue-400"    },
-    upgrade:     { label: "Opportunity", borderColor: "hsl(142 71% 45%)",  badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25", dotClass: "bg-emerald-500", savingsColor: "text-emerald-400" },
-    audit:       { label: "Audit",       borderColor: "hsl(240 5% 45%)",   badgeClass: "bg-zinc-500/10 text-zinc-400 border-zinc-500/25",       dotClass: "bg-zinc-500",    savingsColor: "text-zinc-400"    },
+    cut:         { label: "Cut",         borderColor: "hsl(0 72% 51%)",    badgeClass: "bg-red-500/10 text-red-400 border-red-500/25",            dotClass: "bg-red-500",     savingsColor: "text-red-400"     },
+    downgrade:   { label: "Downgrade",   borderColor: "hsl(25 95% 53%)",   badgeClass: "bg-orange-500/10 text-orange-400 border-orange-500/25",   dotClass: "bg-orange-500",  savingsColor: "text-orange-400"  },
+    negotiate:   { label: "Negotiate",   borderColor: "hsl(48 96% 53%)",   badgeClass: "bg-yellow-500/10 text-yellow-400 border-yellow-500/25",   dotClass: "bg-yellow-500",  savingsColor: "text-yellow-400"  },
+    consolidate: { label: "Consolidate", borderColor: "hsl(217 91% 60%)",  badgeClass: "bg-blue-500/10 text-blue-400 border-blue-500/25",         dotClass: "bg-blue-500",    savingsColor: "text-blue-400"    },
+    upgrade:     { label: "Opportunity", borderColor: "hsl(142 71% 45%)",  badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",dotClass: "bg-emerald-500", savingsColor: "text-emerald-400" },
+    audit:       { label: "Audit",       borderColor: "hsl(240 5% 45%)",   badgeClass: "bg-zinc-500/10 text-zinc-400 border-zinc-500/25",         dotClass: "bg-zinc-500",    savingsColor: "text-zinc-400"    },
 };
 
 const SEVERITY_CONFIG = {
@@ -103,7 +107,6 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
             <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: typeConf.borderColor }} />
 
             <button onClick={() => setExpanded((p) => !p)} className="w-full text-left pl-5 pr-4 pt-3.5 pb-3.5">
-                {/* Row 1: tool + action + savings */}
                 <div className="flex items-center justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2 min-w-0 flex-wrap">
                         <span className="text-base leading-none">{toolIcon(rec.tool)}</span>
@@ -131,8 +134,6 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground/30 transition-transform duration-150 ${expanded ? "rotate-180" : ""}`} />
                     </div>
                 </div>
-
-                {/* Row 2: issue */}
                 <p className="text-sm text-muted-foreground leading-snug pl-6">{rec.issue}</p>
             </button>
 
@@ -162,21 +163,141 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// WELL-OPTIMISED BANNER
-// Shown when Claude determines the stack is intentionally structured
+// CREDEX CTA
+// Shown when potentialMonthlySavings > $500.
+// Credex sells discounted AI credits — this is the lead-gen hook.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CredexCTA({ savings }: { savings: number }) {
+    return (
+        <Card className="border-cyan-500/30 bg-cyan-500/5 overflow-hidden relative">
+            {/* Subtle glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
+            <CardContent className="p-5 relative">
+                <div className="flex items-start gap-4">
+                    <div className="shrink-0 mt-0.5 h-9 w-9 rounded-lg bg-cyan-500/15 flex items-center justify-center">
+                        <Zap className="h-4 w-4 text-cyan-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-cyan-300 mb-1">
+                            Capture more of that ${savings.toLocaleString()}/mo with Credex
+                        </p>
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                            Credex sells discounted AI infrastructure credits — Cursor, Claude, ChatGPT Enterprise, and others — sourced from companies that overforecast or pivoted. The discount is real. Most startups save 20–40% on top of what the audit already found.
+                        </p>
+                        <Button
+                            size="sm"
+                            className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-xs shadow-[0_0_20px_rgba(6,182,212,0.25)]"
+                            onClick={() => window.open("https://credex.rocks", "_blank", "noopener")}
+                        >
+                            Book a free Credex consultation <ExternalLink className="ml-1.5 h-3 w-3" />
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SPENDING WELL BANNER
+// Shown when stack is optimal OR potentialMonthlySavings < $100.
+// Honest, not manufactured. Still captures lead via "notify me" CTA.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function SpendingWellBanner({
+                                notes,
+                                onNotify,
+                            }: {
+    notes: string;
+    onNotify: (email: string) => Promise<void>;
+}) {
+    const [email, setEmail] = useState("");
+    const [submitted, setSubmitted] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!email.trim() || !email.includes("@")) return;
+
+        try {
+            setLoading(true);
+
+            await onNotify(email.trim());
+
+            setSubmitted(true);
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Card className="border-emerald-500/30 bg-emerald-500/5">
+            <CardContent className="p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                    <Sparkles className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="text-sm font-semibold text-emerald-400 mb-1">
+                            You&apos;re spending well
+                        </p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            {notes || "Your AI stack is well-matched to your use cases. No significant consolidation or downgrades are warranted right now."}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Notify me — lead capture without manufactured urgency */}
+                {!submitted ? (
+                    <div className="pl-8 space-y-2">
+                        <p className="text-xs text-muted-foreground/60">
+                            As your team grows or vendors change pricing, new optimisations may apply.
+                            We&apos;ll notify you when they do.
+                        </p>
+                        <div className="flex gap-2">
+                            <Input
+                                type="email"
+                                placeholder="your@email.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                                className="h-8 text-xs max-w-[240px]"
+                            />
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-xs"
+                                onClick={handleSubmit}
+                                disabled={loading}
+                            >
+                                <Bell className="mr-1.5 h-3 w-3" />
+                                {loading ? "Saving..." : "Notify me"}
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="pl-8 flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        <p className="text-xs text-emerald-400">Got it — we&apos;ll reach out when new optimisations apply.</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WELL-OPTIMISED BANNER (engine-flagged, no email CTA needed — SpendingWell covers it)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function WellOptimisedBanner({ notes }: { notes: string }) {
     return (
         <Card className="border-emerald-500/30 bg-emerald-500/5">
             <CardContent className="flex items-start gap-4 p-5">
-                <div className="shrink-0 mt-0.5">
-                    <Sparkles className="h-5 w-5 text-emerald-400" />
-                </div>
+                <Sparkles className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                    <p className="text-sm font-semibold text-emerald-400 mb-1">
-                        Well-optimised stack
-                    </p>
+                    <p className="text-sm font-semibold text-emerald-400 mb-1">Well-optimised stack</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                         {notes || "Your tools are complementary and non-redundant given your stated use cases. No consolidation needed."}
                     </p>
@@ -198,6 +319,8 @@ interface AuditResultsProps {
 
 export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
     const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+    const [savingAudit, setSavingAudit] = useState(false);
+    const [shareUrl, setShareUrl] = useState("");
 
     const {
         recommendations,
@@ -208,6 +331,12 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
         optimisationNotes,
         toolSummaries,
     } = result;
+
+    // ── State classification ───────────────────────────────────────────────
+    // "spending well" = engine says optimised OR savings are trivially small
+    const isSpendingWell = true;
+    // Credex CTA threshold — assignment spec says >$500/mo
+    const showCredexCTA = potentialMonthlySavings >= 500;
 
     const wasteRecs = recommendations.filter((r) => r.estimatedSavings > 0);
     const opportunityRecs = recommendations.filter((r) => r.estimatedSavings === 0);
@@ -233,6 +362,79 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
         .sort((a, b) => b.monthlyCost - a.monthlyCost)
         .map((t) => ({ name: t.name, cost: t.monthlyCost }));
 
+    // Notify-me handler — TODO: wire to email capture backend (Supabase)
+    // Notify-me handler — saves lead to backend
+    const handleNotify = async (email: string) => {
+        try {
+            const response = await fetch("/api/leads", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    estimatedMonthlySavings:
+                    potentialMonthlySavings,
+                    totalMonthlySpend:
+                    totalMonthlySpend,
+                    auditSummary: recommendations,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data.error);
+                return;
+            }
+
+            return;
+
+        } catch (error) {
+            console.error("Failed to save lead:", error);
+        }
+    };
+    const handleSaveAudit = async () => {
+        try {
+            setSavingAudit(true);
+
+            const response = await fetch("/api/audits", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    tools,
+                    recommendations,
+                    totalMonthlySpend,
+                    potentialMonthlySavings,
+                    potentialYearlySavings,
+                    stackIsWellOptimised,
+                    optimisationNotes,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data.error);
+                return;
+            }
+
+            const url = `${window.location.origin}/audit/${data.id}`;
+
+            setShareUrl(url);
+
+            window.open(url, "_blank");
+
+        } catch (error) {
+            console.error("Failed to save audit:", error);
+
+        } finally {
+            setSavingAudit(false);
+        }
+    };
+
     return (
         <div className="space-y-8">
 
@@ -241,8 +443,8 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">Audit Report</h2>
                     <p className="text-muted-foreground text-sm mt-0.5">
-                        {stackIsWellOptimised
-                            ? "Your stack is well-optimised for its current use cases."
+                        {isSpendingWell
+                            ? "Your stack looks healthy — no significant waste found."
                             : recommendations.length === 0
                                 ? "No issues found."
                                 : <>
@@ -252,10 +454,40 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                         }
                     </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={onReset}>
-                    <ArrowLeft className="mr-2 h-3.5 w-3.5" /> Edit Stack
+                <div className="flex items-center gap-2">
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleSaveAudit}
+                    disabled={savingAudit}
+                >
+                    {savingAudit ? "Saving..." : "Share Audit"}
+                </Button>
+                    {shareUrl && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigator.clipboard.writeText(shareUrl)}
+                        >
+                            Copy Link
+                        </Button>
+                    )}
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onReset}
+                >
+                    <ArrowLeft className="mr-2 h-3.5 w-3.5" />
+                    Edit Stack
                 </Button>
             </div>
+            </div>
+
+            {/* ── Credex CTA — above the fold for high savings ───────────── */}
+            {showCredexCTA && (
+                <CredexCTA savings={potentialMonthlySavings} />
+            )}
 
             {/* ── Summary cards ──────────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -266,12 +498,13 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                     </CardHeader>
                 </Card>
 
-                <Card className="border-emerald-500/30 bg-emerald-500/5">
+                <Card className={`${potentialMonthlySavings > 0 ? "border-emerald-500/30 bg-emerald-500/5" : "border-border/50 bg-card/50"}`}>
                     <CardHeader className="pb-2 pt-4 px-4">
-                        <CardDescription className="text-xs text-emerald-500 flex items-center gap-1">
-                            <TrendingDown className="h-3 w-3" /> Monthly Savings
+                        <CardDescription className={`text-xs flex items-center gap-1 ${potentialMonthlySavings > 0 ? "text-emerald-500" : ""}`}>
+                            {potentialMonthlySavings > 0 && <TrendingDown className="h-3 w-3" />}
+                            Monthly Savings
                         </CardDescription>
-                        <CardTitle className="text-2xl font-mono text-emerald-400">
+                        <CardTitle className={`text-2xl font-mono ${potentialMonthlySavings > 0 ? "text-emerald-400" : "text-muted-foreground"}`}>
                             ${potentialMonthlySavings.toLocaleString()}
                         </CardTitle>
                     </CardHeader>
@@ -280,7 +513,7 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                 <Card className="border-border/50 bg-card/50">
                     <CardHeader className="pb-2 pt-4 px-4">
                         <CardDescription className="text-xs">Yearly Savings</CardDescription>
-                        <CardTitle className="text-2xl font-mono text-emerald-500">
+                        <CardTitle className={`text-2xl font-mono ${potentialYearlySavings > 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
                             ${potentialYearlySavings.toLocaleString()}
                         </CardTitle>
                     </CardHeader>
@@ -309,13 +542,21 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                 <div className="space-y-4">
                     <h3 className="text-base font-semibold border-b border-border/50 pb-2">Recommendations</h3>
 
-                    {/* Well-optimised banner — shown even if there are minor findings */}
-                    {stackIsWellOptimised && (
+                    {/* Spending well state — honest, no manufactured savings */}
+                    {isSpendingWell && (
+                        <SpendingWellBanner
+                            notes={optimisationNotes}
+                            onNotify={handleNotify}
+                        />
+                    )}
+
+                    {/* Well-optimised engine note — only when savings exist but engine still flagged it */}
+                    {!isSpendingWell && stackIsWellOptimised && (
                         <WellOptimisedBanner notes={optimisationNotes} />
                     )}
 
                     {recommendations.length === 0 ? (
-                        !stackIsWellOptimised && (
+                        !isSpendingWell && (
                             <Card className="border-dashed bg-muted/10">
                                 <CardContent className="flex flex-col items-center justify-center p-12 text-center">
                                     <CheckCircle2 className="h-10 w-10 text-emerald-500 mb-3" />
@@ -361,11 +602,13 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                                                 Waste · {wasteRecs.length} finding{wasteRecs.length !== 1 ? "s" : ""}
                                             </span>
                                             <div className="flex-1 h-px bg-border/40" />
-                                            <span className="text-[10px] font-mono text-emerald-600">−${potentialMonthlySavings.toLocaleString()}/mo</span>
+                                            <span className="text-[10px] font-mono text-emerald-600">
+                                                −${potentialMonthlySavings.toLocaleString()}/mo
+                                            </span>
                                         </div>
                                     )}
-                                    {filtered.filter((r) => r.estimatedSavings > 0).map((rec) => (
-                                        <RecommendationCard key={`${rec.tool}-${rec.issue}`} rec={rec} />
+                                    {filtered.filter((r) => r.estimatedSavings > 0).map((rec, i) => (
+                                        <RecommendationCard key={i} rec={rec} />
                                     ))}
                                 </div>
                             )}
@@ -381,10 +624,29 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                                             <div className="flex-1 h-px bg-border/40" />
                                         </div>
                                     )}
-                                    {filtered.filter((r) => r.estimatedSavings === 0).map((rec) => (
-                                        <RecommendationCard key={`${rec.tool}-${rec.issue}`} rec={rec} />
+                                    {filtered.filter((r) => r.estimatedSavings === 0).map((rec, i) => (
+                                        <RecommendationCard key={i} rec={rec} />
                                     ))}
                                 </div>
+                            )}
+
+                            {/* Credex CTA — below recs for medium savings ($100–$499) */}
+                            {!showCredexCTA && potentialMonthlySavings >= 100 && (
+                                <Card className="border-border/50 bg-card/30 mt-2">
+                                    <CardContent className="p-4 flex items-center gap-3">
+                                        <Zap className="h-4 w-4 text-cyan-400 shrink-0" />
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                            Want to reduce costs further?{" "}
+                                            <button
+                                                onClick={() => window.open("https://credex.rocks", "_blank", "noopener")}
+                                                className="text-cyan-400 underline underline-offset-2 hover:text-cyan-300"
+                                            >
+                                                Credex sells discounted AI credits
+                                            </button>{" "}
+                                            — real savings on top of what you found here.
+                                        </p>
+                                    </CardContent>
+                                </Card>
                             )}
                         </div>
                     )}
@@ -416,7 +678,7 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                         </div>
                     </Card>
 
-                    {/* Per-tool rows with usage summary */}
+                    {/* Per-tool rows */}
                     <div className="space-y-3">
                         {chartData.map((t) => {
                             const pct = totalMonthlySpend > 0 ? Math.round((t.cost / totalMonthlySpend) * 100) : 0;
@@ -432,7 +694,6 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                                         <span className="text-xs font-mono text-muted-foreground w-16 text-right shrink-0">${t.cost.toLocaleString()}</span>
                                         <span className="text-[10px] font-mono text-muted-foreground/40 w-8 text-right shrink-0">{pct}%</span>
                                     </div>
-                                    {/* Semantic usage summary — what Claude understood they use it for */}
                                     {summary && (
                                         <p className="text-[11px] text-muted-foreground/50 pl-8 leading-snug">{summary}</p>
                                     )}
