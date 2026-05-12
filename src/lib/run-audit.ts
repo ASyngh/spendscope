@@ -41,7 +41,7 @@ export type FullAuditResult = AuditResult & {
 // contextual and readable, given the actual tool/plan/use-case context.
 // Runs as a single batched API call for all recommendations.
 // ─────────────────────────────────────────────────────────────────────────────
-console.log("Groq key:", process.env.NEXT_PUBLIC_GROQ_API_KEY?.slice(0, 8));
+
 async function enrichRecommendations(
     recommendations: Recommendation[],
     tools: AuditTool[],
