@@ -35,10 +35,6 @@ export default function AuditPage() {
     const [loading, setLoading] = useState(false);
     const [auditKey, setAuditKey] = useState(0);
 
-    // Hydrate from localStorage on mount (after hydration to avoid SSR mismatch)
-    useEffect(() => {
-        setTools(loadTools());
-    }, []);
 
     const updateTools = (next: AuditTool[]) => {
         setTools(next);
