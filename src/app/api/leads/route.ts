@@ -14,7 +14,13 @@ export async function POST(req: Request) {
             estimatedMonthlySavings,
             totalMonthlySpend,
             auditSummary,
+            website, // honeypot field — bots fill this, humans don't see it
         } = body;
+
+        // Honeypot: if filled, silently reject without revealing it failed
+        if (website) {
+            return NextResponse.json({ success: true });
+        }
 
         if (!email) {
             return NextResponse.json(
@@ -31,17 +37,14 @@ export async function POST(req: Request) {
                     company_name: companyName || null,
                     role: role || null,
                     team_size: teamSize || null,
-                    estimated_monthly_savings:
-                        estimatedMonthlySavings || 0,
-                    total_monthly_spend:
-                        totalMonthlySpend || 0,
+                    estimated_monthly_savings: estimatedMonthlySavings || 0,
+                    total_monthly_spend: totalMonthlySpend || 0,
                     audit_summary: auditSummary || null,
                 },
             ]);
 
         if (error) {
             console.error("Supabase insert error:", error);
-
             return NextResponse.json(
                 { error: "Failed to save lead" },
                 { status: 500 }
@@ -77,12 +80,9 @@ export async function POST(req: Request) {
     `,
         });
 
-        return NextResponse.json({
-            success: true,
-        });
+        return NextResponse.json({ success: true });
     } catch (error) {
         console.error("API route error:", error);
-
         return NextResponse.json(
             { error: "Server error" },
             { status: 500 }

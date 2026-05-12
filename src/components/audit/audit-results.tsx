@@ -264,6 +264,16 @@ function SpendingWellBanner({
                                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                                 className="h-8 text-xs max-w-[240px]"
                             />
+                            {/* Honeypot — hidden from humans */}
+                            <Input
+                                type="text"
+                                name="website"
+                                style={{ display: "none" }}
+                                tabIndex={-1}
+                                autoComplete="off"
+                                aria-hidden="true"
+                                readOnly
+                            />
                             <Button
                                 size="sm"
                                 variant="outline"
@@ -334,7 +344,7 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
 
     // ── State classification ───────────────────────────────────────────────
     // "spending well" = engine says optimised OR savings are trivially small
-    const isSpendingWell = true;
+    const isSpendingWell = stackIsWellOptimised || potentialMonthlySavings < 100;
     // Credex CTA threshold — assignment spec says >$500/mo
     const showCredexCTA = potentialMonthlySavings >= 500;
 
@@ -378,6 +388,7 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                     totalMonthlySpend:
                     totalMonthlySpend,
                     auditSummary: recommendations,
+                    website:"",
                 }),
             });
 
