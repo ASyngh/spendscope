@@ -931,7 +931,7 @@ function ruleMonthlyBillingAtTeamScale(ctx: RuleContext): RuleResult {
 
     const discountRate = ANNUAL_DISCOUNT_RATE[tool.name] ?? 0.17;
     const savings = Math.round(tool.monthlyCost * discountRate);
-    if (savings < 20) return null; // Not worth flagging for tiny amounts
+    if (savings < 5) return null; // Not worth flagging for tiny amounts
 
     return {
         key: `monthly-billing-${tool.name}`,
