@@ -1,3 +1,4 @@
+import { Recommendation } from "@/types/audit";
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
@@ -76,7 +77,7 @@ export default async function SharedAuditPage({
                     </h2>
 
                     <div className="space-y-3">
-                        {data.recommendations.map((rec: any, index: number) => (
+                        {data.recommendations.map((rec:Recommendation , index: number) => (
                             <div
                                 key={index}
                                 className="rounded-lg border border-border p-4"
