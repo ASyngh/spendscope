@@ -29,9 +29,7 @@ Flow:
 
 Detection trigger is a manually called POST endpoint. Scheduling (Vercel Cron / GitHub Actions) would wrap the same endpoint — the logic is identical, I just didn't add the scheduler in this PR.
 
-The spec says "Mermaid diagram if it helps. ASCII is fine. No diagram is fine too if the prose is clear." — it's optional. Your "How it works" section has a clear code block showing the file structure and a numbered flow, which covers it.
 
-But if you want to add one, here's a clean mermaid diagram you can drop into the `## How it works` section:
 
 ```mermaid
 flowchart TD
