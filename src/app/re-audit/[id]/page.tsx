@@ -19,7 +19,7 @@ export default async function ReAuditPage({ params }: { params: Promise<{ id: st
         return (
             <main className="max-w-2xl mx-auto py-16 px-4 text-center">
                 <h1 className="text-2xl font-bold mb-4">No diff available</h1>
-                <p className="text-muted-foreground">This audit hasn't been re-run yet, or nothing changed.</p>
+                <p className="text-muted-foreground">This audit hasnt been re-run yet, or nothing changed.</p>
             </main>
         );
     }
@@ -43,7 +43,7 @@ export default async function ReAuditPage({ params }: { params: Promise<{ id: st
         <main className="max-w-3xl mx-auto py-12 px-4">
             <h1 className="text-3xl font-bold mb-2">Re-Audit Results</h1>
             <p className="text-muted-foreground mb-8">
-                Pricing changed since your original audit. Here's what's different.
+                Pricing changed since your original audit. Heres whats different.
             </p>
 
             {/* Savings delta */}
