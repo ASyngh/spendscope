@@ -30,20 +30,19 @@ Flow:
 Detection trigger is a manually called POST endpoint. Scheduling (Vercel Cron / GitHub Actions) would wrap the same endpoint — the logic is identical, I just didn't add the scheduler in this PR.
 
 
-
 ```mermaid
 flowchart TD
-    A[User runs audit] --> B[Enters email + clicks Share Audit]
-    B --> C[audits row saved\n+ email + pricing_snapshot]
-    D[Pricing changes\nbump _version in pricing.ts] --> E[POST /api/detect-changes]
+    A[User runs audit] --> B[Enters email and clicks Share Audit]
+    B --> C[Audit row saved with email and pricing snapshot]
+    D[Pricing changes - bump version in pricing.ts] --> E[POST api/detect-changes]
     C --> E
-    E --> F{snapshot _version\n== current _version?}
+    E --> F{Versions match?}
     F -- Yes --> G[Skip]
-    F -- No --> H[Re-run audit engine\n+ diff results]
-    H --> I[Update DB row\nis_stale = true]
+    F -- No --> H[Re-run engine and diff results]
+    H --> I[Update DB - is_stale = true]
     I --> J[Send email via Resend]
     J --> K[User clicks View full diff]
-    K --> L[/re-audit/id renders\nsavings delta + rec diff]
+    K --> L[Re-audit page shows savings delta and diff]
 ```
 
 
