@@ -29,11 +29,31 @@ Flow:
 
 Detection trigger is a manually called POST endpoint. Scheduling (Vercel Cron / GitHub Actions) would wrap the same endpoint — the logic is identical, I just didn't add the scheduler in this PR.
 
+The spec says "Mermaid diagram if it helps. ASCII is fine. No diagram is fine too if the prose is clear." — it's optional. Your "How it works" section has a clear code block showing the file structure and a numbered flow, which covers it.
+
+But if you want to add one, here's a clean mermaid diagram you can drop into the `## How it works` section:
+
+```mermaid
+flowchart TD
+    A[User runs audit] --> B[Enters email + clicks Share Audit]
+    B --> C[audits row saved\n+ email + pricing_snapshot]
+    D[Pricing changes\nbump _version in pricing.ts] --> E[POST /api/detect-changes]
+    C --> E
+    E --> F{snapshot _version\n== current _version?}
+    F -- Yes --> G[Skip]
+    F -- No --> H[Re-run audit engine\n+ diff results]
+    H --> I[Update DB row\nis_stale = true]
+    I --> J[Send email via Resend]
+    J --> K[User clicks View full diff]
+    K --> L[/re-audit/id renders\nsavings delta + rec diff]
+```
+
+
+
 ## What I cut
 
 - **One-click unsubscribe** — would need a signed token system (or a separate DB column + verify endpoint). The value/effort ratio didn't justify it in the time available. Next step if this shipped.
 - **Public "what changed this week" page** — good growth surface but purely additive; the core flow works without it. Would be a 2-hour add once pricing.ts has a changelog format.
-- **Admin dashboard** — skipped entirely. The detect-changes endpoint returns a JSON summary (`checked / stale / emailed / errors`) which is sufficient for manual operation.
 - **Consolidated email per user** — the spec mentions sending one email per user across multiple stale audits. Current implementation sends one email per stale audit. For most users this is identical (one audit per email), and the fix is a simple group-by before the email loop. Documented as a known gap.
 - **Audit engine refactor to import from pricing.ts** — the engine still has prices hardcoded. The snapshot stored in the DB is from `pricing.ts`, so detection works correctly. Refactoring the engine to import from `pricing.ts` is the right long-term move but wasn't needed for correctness here.
 
