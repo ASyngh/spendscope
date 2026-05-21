@@ -328,6 +328,7 @@ interface AuditResultsProps {
 }
 
 export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
+    const [email, setEmail] = useState("");
     const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
     const [savingAudit, setSavingAudit] = useState(false);
     const [shareUrl, setShareUrl] = useState("");
@@ -415,6 +416,7 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    email,
                     tools,
                     recommendations,
                     totalMonthlySpend,
@@ -466,11 +468,18 @@ export function AuditResults({ result, tools, onReset }: AuditResultsProps) {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                <Button
+                    <Input
+                        type="email"
+                        placeholder="email for re-audit alerts"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="h-8 text-xs w-48"
+                    />
+                    <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleSaveAudit}
-                    disabled={savingAudit}
+                    disabled={savingAudit || !email.includes("@")}
                 >
                     {savingAudit ? "Saving..." : "Share Audit"}
                 </Button>

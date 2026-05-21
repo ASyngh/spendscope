@@ -77,7 +77,7 @@ export async function POST(req: Request) {
         if (audit.email) {
             try {
                 await resend.emails.send({
-                    from: "SpendScope <noreply@yourdomain.com>", // update with your verified domain
+                    from: "SpendScope <onboarding@resend.dev>", // update with your verified domain
                     to: audit.email,
                     subject: "Your AI spend audit has new recommendations",
                     html: buildEmail(audit.id, diff),

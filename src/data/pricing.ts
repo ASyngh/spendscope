@@ -2,7 +2,7 @@
 // detect-changes compares stored snapshot _version vs this to find stale audits.
 
 export const PRICING = {
-    _version: "2025-05-20",
+    _version: "2025-05-19",
 
     // Per-seat monthly benchmarks — mirrors PLAN_SEAT_BENCHMARKS in audit-engine
     benchmarks: {
